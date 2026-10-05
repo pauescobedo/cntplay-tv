@@ -30,7 +30,7 @@ let loadedKey = "";
 let awaitingDriveClick = false;
 let guideKey = "";
 let guideWindowStart = 0;
-let guideInitialScrollLeft = 0;
+let guideReturnScrollLeft = 0;
 let guideScrollbarDrag;
 let controlsTimer;
 let activeChannel = "cnt";
@@ -47,7 +47,7 @@ function updateGuideReturnVisibility() {
   const viewport = $("program-guide-scroll");
   const button = $("guide-return-button");
   if (!viewport || !button) return;
-  const difference = viewport.scrollLeft - guideInitialScrollLeft;
+  const difference = viewport.scrollLeft - guideReturnScrollLeft;
   const visible = !viewport.hidden && Math.abs(difference) >= 10;
   const shell = document.querySelector(".guide-scroll-shell");
   shell?.classList.toggle("is-away", visible);
@@ -77,6 +77,14 @@ function moveGuideScrollbar(event) {
   const available = Math.max(1, rect.width - thumb.offsetWidth);
   const position = Math.max(0, Math.min(available, event.clientX - rect.left - guideScrollbarDrag.offset));
   viewport.scrollLeft = (position / available) * Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+}
+
+function guideScrollTarget(nowLineLeft, viewport) {
+  const edgeMargin = Math.min(48, viewport.clientWidth * .1);
+  const rightLimit = viewport.clientWidth - edgeMargin;
+  return nowLineLeft <= rightLimit
+    ? 0
+    : Math.max(0, nowLineLeft - rightLimit);
 }
 
 function updateVideoHelpVisibility() {
@@ -479,7 +487,12 @@ function renderProgramGuide(state) {
     : current.start);
   const key = `${state.day}-${currentGuideStart}-${current.type === "filler" ? "pause" : current.type}`;
   if (guideKey === key) {
-    $("guide-now-line").style.left = `${((nowSeconds - guideWindowStart) / 3600) * hourWidth}px`;
+    const nowLineLeft = ((nowSeconds - guideWindowStart) / 3600) * hourWidth;
+    const wasFollowingEmission = Math.abs(viewport.scrollLeft - guideReturnScrollLeft) < 10;
+    guideReturnScrollLeft = guideScrollTarget(nowLineLeft, viewport);
+    $("guide-now-line").style.left = `${nowLineLeft}px`;
+    if (wasFollowingEmission) viewport.scrollLeft = guideReturnScrollLeft;
+    updateGuideReturnVisibility();
     return;
   }
   guideKey = key;
@@ -565,11 +578,8 @@ function renderProgramGuide(state) {
   scale.replaceChildren(hourFragment);
   track.replaceChildren(fragment);
   requestAnimationFrame(() => {
-    const edgeMargin = Math.min(48, viewport.clientWidth * .1);
-    const lineFitsComfortably = nowLineLeft <= viewport.clientWidth - edgeMargin;
-    const initialScroll = lineFitsComfortably ? 0 : Math.max(0, nowLineLeft - edgeMargin);
-    guideInitialScrollLeft = initialScroll;
-    viewport.scrollTo({ left: initialScroll, behavior: "auto" });
+    guideReturnScrollLeft = guideScrollTarget(nowLineLeft, viewport);
+    viewport.scrollTo({ left: guideReturnScrollLeft, behavior: "auto" });
     updateGuideReturnVisibility();
   });
 }
@@ -892,7 +902,7 @@ $("video-help-close").addEventListener("click", () => {
 $("video-help-reload").addEventListener("click", reloadCurrentPlayer);
 $("program-guide-scroll").addEventListener("scroll", updateGuideReturnVisibility, { passive: true });
 $("guide-return-button").addEventListener("click", () => {
-  $("program-guide-scroll").scrollTo({ left: guideInitialScrollLeft, behavior: "smooth" });
+  $("program-guide-scroll").scrollTo({ left: guideReturnScrollLeft, behavior: "smooth" });
 });
 $("guide-scrollbar").addEventListener("pointerdown", (event) => {
   const thumb = $("guide-scrollbar-thumb");
