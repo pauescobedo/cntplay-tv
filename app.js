@@ -47,8 +47,12 @@ function updateGuideReturnVisibility() {
   const viewport = $("program-guide-scroll");
   const button = $("guide-return-button");
   if (!viewport || !button) return;
-  const visible = !viewport.hidden && Math.abs(viewport.scrollLeft - guideInitialScrollLeft) >= 10;
-  document.querySelector(".guide-scroll-shell")?.classList.toggle("is-away", visible);
+  const difference = viewport.scrollLeft - guideInitialScrollLeft;
+  const visible = !viewport.hidden && Math.abs(difference) >= 10;
+  const shell = document.querySelector(".guide-scroll-shell");
+  shell?.classList.toggle("is-away", visible);
+  shell?.classList.toggle("return-backward", visible && difference > 0);
+  shell?.classList.toggle("return-forward", visible && difference < 0);
   button.classList.toggle("is-visible", visible);
   button.setAttribute("aria-hidden", String(!visible));
   button.tabIndex = visible ? 0 : -1;
@@ -812,7 +816,7 @@ function setActiveChannel(id, updateHash = true) {
     $("time-row").hidden = false;
     document.querySelector(".next-card").hidden = false;
     $("program-guide-scroll").hidden = false;
-    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away");
+    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away", "return-backward", "return-forward");
     $("guide-return-button").classList.remove("is-visible");
     $("guide-empty").hidden = true;
     loadedKey = "";
@@ -837,7 +841,7 @@ function setActiveChannel(id, updateHash = true) {
     $("time-row").hidden = true;
     document.querySelector(".next-card").hidden = true;
     $("program-guide-scroll").hidden = true;
-    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away");
+    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away", "return-backward", "return-forward");
     $("guide-return-button").classList.remove("is-visible");
     updateGuideReturnVisibility();
     $("guide-empty").hidden = false;
