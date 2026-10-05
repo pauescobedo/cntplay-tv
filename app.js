@@ -36,6 +36,7 @@ let guideReturnScrollLeft = 0;
 let guideScrollbarDrag;
 let guideReturnInProgress = false;
 let guideReturnTimer;
+let guideReturnSequence = 0;
 let controlsTimer;
 let activeChannel = "cnt";
 let suppressChannelBug = false;
@@ -72,8 +73,12 @@ function updateGuideReturnVisibility() {
   const shell = document.querySelector(".guide-scroll-shell");
   shell?.classList.toggle("is-away", !viewport.hidden && Math.abs(viewport.scrollLeft - guideFollowScrollLeft) >= 10);
   shell?.classList.toggle("is-return-needed", visible);
-  shell?.classList.toggle("return-backward", visible && lineIsLeft);
-  shell?.classList.toggle("return-forward", visible && lineIsRight);
+  // Durante el fundido conserva el lado y la orientación originales; cambiarlos
+  // antes de que llegue a opacidad cero provoca un destello de la flecha contraria.
+  if (!guideReturnInProgress) {
+    shell?.classList.toggle("return-backward", visible && lineIsLeft);
+    shell?.classList.toggle("return-forward", visible && lineIsRight);
+  }
   button.classList.toggle("is-visible", visible);
   button.setAttribute("aria-hidden", String(!visible));
   button.tabIndex = visible ? 0 : -1;
@@ -945,14 +950,21 @@ $("video-help-reload").addEventListener("click", reloadCurrentPlayer);
 $("program-guide-scroll").addEventListener("scroll", updateGuideReturnVisibility, { passive: true });
 $("guide-return-button").addEventListener("click", () => {
   const viewport = $("program-guide-scroll");
+  const returnsToRight = document.querySelector(".guide-scroll-shell")?.classList.contains("return-forward");
+  const sequence = ++guideReturnSequence;
   guideReturnInProgress = true;
   clearTimeout(guideReturnTimer);
   updateGuideReturnVisibility();
   viewport.scrollTo({ left: guideReturnScrollLeft, behavior: "smooth" });
-  guideReturnTimer = setTimeout(() => {
+  const finishReturn = () => {
+    if (sequence !== guideReturnSequence) return;
+    clearTimeout(guideReturnTimer);
+    if (returnsToRight) viewport.scrollLeft = guideFollowScrollLeft;
     guideReturnInProgress = false;
     updateGuideReturnVisibility();
-  }, 700);
+  };
+  if ("onscrollend" in viewport) viewport.addEventListener("scrollend", finishReturn, { once: true });
+  guideReturnTimer = setTimeout(finishReturn, 1200);
 });
 $("guide-scrollbar").addEventListener("pointerdown", (event) => {
   const thumb = $("guide-scrollbar-thumb");
