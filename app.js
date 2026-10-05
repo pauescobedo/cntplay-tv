@@ -30,6 +30,8 @@ let loadedKey = "";
 let awaitingDriveClick = false;
 let guideKey = "";
 let guideWindowStart = 0;
+let guideNowLineLeft = 0;
+let guideFollowScrollLeft = 0;
 let guideReturnScrollLeft = 0;
 let guideScrollbarDrag;
 let controlsTimer;
@@ -47,19 +49,34 @@ function updateGuideReturnVisibility() {
   const viewport = $("program-guide-scroll");
   const button = $("guide-return-button");
   if (!viewport || !button) return;
-  const difference = viewport.scrollLeft - guideReturnScrollLeft;
-  const visible = !viewport.hidden && Math.abs(difference) >= 10;
+  const edgeMargin = Math.min(36, viewport.clientWidth * .075);
+  const linePosition = guideNowLineLeft - viewport.scrollLeft;
+  const maximum = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+  // No se pide un margen imposible en los extremos reales de la parrilla.
+  const lineIsLeft = linePosition < edgeMargin && viewport.scrollLeft > .5;
+  const lineIsRight = linePosition > viewport.clientWidth - edgeMargin && viewport.scrollLeft < maximum - .5;
+  const visible = !viewport.hidden && (lineIsLeft || lineIsRight);
+  const startViewShowsNow = guideNowLineLeft <= viewport.clientWidth - edgeMargin;
+  if (lineIsLeft) {
+    guideReturnScrollLeft = startViewShowsNow
+      ? 0
+      : Math.max(0, Math.min(maximum, guideNowLineLeft - edgeMargin));
+  } else if (lineIsRight) {
+    guideReturnScrollLeft = startViewShowsNow
+      ? 0
+      : Math.max(0, Math.min(maximum, guideNowLineLeft - (viewport.clientWidth - edgeMargin)));
+  }
   const shell = document.querySelector(".guide-scroll-shell");
-  shell?.classList.toggle("is-away", visible);
-  shell?.classList.toggle("return-backward", visible && difference > 0);
-  shell?.classList.toggle("return-forward", visible && difference < 0);
+  shell?.classList.toggle("is-away", !viewport.hidden && Math.abs(viewport.scrollLeft - guideFollowScrollLeft) >= 10);
+  shell?.classList.toggle("is-return-needed", visible);
+  shell?.classList.toggle("return-backward", visible && lineIsLeft);
+  shell?.classList.toggle("return-forward", visible && lineIsRight);
   button.classList.toggle("is-visible", visible);
   button.setAttribute("aria-hidden", String(!visible));
   button.tabIndex = visible ? 0 : -1;
   const scrollbar = $("guide-scrollbar");
   const thumb = $("guide-scrollbar-thumb");
   if (!scrollbar || !thumb) return;
-  const maximum = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
   const trackWidth = scrollbar.clientWidth;
   const thumbWidth = Math.max(38, Math.min(trackWidth, trackWidth * viewport.clientWidth / Math.max(viewport.scrollWidth, 1)));
   const thumbTravel = Math.max(0, trackWidth - thumbWidth);
@@ -80,7 +97,7 @@ function moveGuideScrollbar(event) {
 }
 
 function guideScrollTarget(nowLineLeft, viewport) {
-  const edgeMargin = Math.min(48, viewport.clientWidth * .1);
+  const edgeMargin = Math.min(36, viewport.clientWidth * .075);
   const rightLimit = viewport.clientWidth - edgeMargin;
   return nowLineLeft <= rightLimit
     ? 0
@@ -488,10 +505,17 @@ function renderProgramGuide(state) {
   const key = `${state.day}-${currentGuideStart}-${current.type === "filler" ? "pause" : current.type}`;
   if (guideKey === key) {
     const nowLineLeft = ((nowSeconds - guideWindowStart) / 3600) * hourWidth;
-    const wasFollowingEmission = Math.abs(viewport.scrollLeft - guideReturnScrollLeft) < 10;
-    guideReturnScrollLeft = guideScrollTarget(nowLineLeft, viewport);
+    const edgeMargin = Math.min(36, viewport.clientWidth * .075);
+    const rightLimit = viewport.clientWidth - edgeMargin;
+    const previousLinePosition = guideNowLineLeft - viewport.scrollLeft;
+    const wasFollowingEmission = Math.abs(viewport.scrollLeft - guideFollowScrollLeft) < 1;
+    const reachesRightMargin = !wasFollowingEmission
+      && previousLinePosition >= rightLimit - 1
+      && previousLinePosition <= rightLimit + 1;
+    guideNowLineLeft = nowLineLeft;
+    guideFollowScrollLeft = guideScrollTarget(nowLineLeft, viewport);
     $("guide-now-line").style.left = `${nowLineLeft}px`;
-    if (wasFollowingEmission) viewport.scrollLeft = guideReturnScrollLeft;
+    if (wasFollowingEmission || reachesRightMargin) viewport.scrollLeft = guideFollowScrollLeft;
     updateGuideReturnVisibility();
     return;
   }
@@ -526,14 +550,18 @@ function renderProgramGuide(state) {
 
   const timelineWidth = ((extendedEnd - guideWindowStart) / 3600) * hourWidth;
   const nowLineLeft = ((nowSeconds - guideWindowStart) / 3600) * hourWidth;
+  guideNowLineLeft = nowLineLeft;
   $("guide-now-line").style.left = `${nowLineLeft}px`;
   const track = $("program-guide-track");
   const scale = $("hour-scale");
   const timeline = $("guide-timeline");
   const fragment = document.createDocumentFragment();
   const hourFragment = document.createDocumentFragment();
+  const secondsUntilClockHour = (3600 - (guideWindowStart % 3600)) % 3600;
+  const clockHourOffset = (secondsUntilClockHour / 3600) * hourWidth;
   timeline.style.width = `${timelineWidth}px`;
   timeline.style.setProperty("--hour-width", `${hourWidth}px`);
+  timeline.style.setProperty("--clock-hour-offset", `${clockHourOffset}px`);
 
   const currentMark = document.createElement("span");
   currentMark.className = "hour-mark is-now";
@@ -578,8 +606,9 @@ function renderProgramGuide(state) {
   scale.replaceChildren(hourFragment);
   track.replaceChildren(fragment);
   requestAnimationFrame(() => {
-    guideReturnScrollLeft = guideScrollTarget(nowLineLeft, viewport);
-    viewport.scrollTo({ left: guideReturnScrollLeft, behavior: "auto" });
+    guideFollowScrollLeft = guideScrollTarget(nowLineLeft, viewport);
+    guideReturnScrollLeft = guideFollowScrollLeft;
+    viewport.scrollTo({ left: guideFollowScrollLeft, behavior: "auto" });
     updateGuideReturnVisibility();
   });
 }
@@ -631,7 +660,7 @@ function renderComingUp(state) {
   const overlay = $("coming-up");
   const screen = $("screen");
   const remaining = state.event.item.duration - (state.position - state.event.start);
-  const visible = !SCHEDULES[activeChannel]?.testing && state.event.type === "program" && (!state.event.groupId || state.event.item.groupLast) && remaining <= 20 && remaining > 12;
+  const visible = hasStartedCurrentVideo && !SCHEDULES[activeChannel]?.testing && state.event.type === "program" && (!state.event.groupId || state.event.item.groupLast) && remaining <= 20 && remaining > 12;
   overlay.classList.toggle("is-visible", visible);
   screen.classList.toggle("coming-up-visible", visible);
   overlay.setAttribute("aria-hidden", String(!visible));
@@ -826,7 +855,7 @@ function setActiveChannel(id, updateHash = true) {
     $("time-row").hidden = false;
     document.querySelector(".next-card").hidden = false;
     $("program-guide-scroll").hidden = false;
-    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away", "return-backward", "return-forward");
+    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away", "is-return-needed", "return-backward", "return-forward");
     $("guide-return-button").classList.remove("is-visible");
     $("guide-empty").hidden = true;
     loadedKey = "";
@@ -851,7 +880,7 @@ function setActiveChannel(id, updateHash = true) {
     $("time-row").hidden = true;
     document.querySelector(".next-card").hidden = true;
     $("program-guide-scroll").hidden = true;
-    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away", "return-backward", "return-forward");
+    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away", "is-return-needed", "return-backward", "return-forward");
     $("guide-return-button").classList.remove("is-visible");
     updateGuideReturnVisibility();
     $("guide-empty").hidden = false;
