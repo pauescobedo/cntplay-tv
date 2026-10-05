@@ -218,9 +218,11 @@ html[data-channel="metv"] .screen:-webkit-full-screen .channel-bug { width: clam
   .guide-return-button.is-visible { opacity: 1; transform: translate(0,-50%) scale(1); pointer-events: auto; }
   .guide-scroll-shell.return-forward .guide-return-button.is-visible { transform: translate(0,-50%) scale(1); }
 }
-.guide-timeline { position: relative; height: 264px; background-image: linear-gradient(to right, rgba(255,255,255,.09) 0 1px, transparent 1px); background-position: var(--clock-hour-offset, 0) 0; background-repeat: repeat-x; background-size: calc(var(--hour-width) * .25) 100%; }
-.hour-scale { position: relative; height: 46px; border-bottom: 1px solid var(--line); }
-.hour-mark { position: absolute; top: 12px; color: var(--muted); font-size: .82rem; font-weight: 750; font-variant-numeric: tabular-nums; transform: translateX(8px); }
+.guide-timeline { position: relative; height: 264px; }
+.hour-scale { position: relative; height: 46px; border-bottom: 1px solid var(--line); background-image: linear-gradient(to right, rgba(255,255,255,.09) 0 1px, transparent 1px); background-position: var(--clock-hour-offset, 0) 0; background-repeat: repeat-x; background-size: calc(var(--hour-width) * .25) 100%; }
+.hour-scale::after { content: ""; position: absolute; z-index: 1; top: 0; bottom: 1px; left: var(--crossed-division-offset, 0); width: 2px; background: #080b12; opacity: 0; pointer-events: none; }
+.hour-scale.has-crossed-start-division::after { opacity: 1; }
+.hour-mark { position: absolute; z-index: 2; top: 12px; color: var(--muted); font-size: .82rem; font-weight: 750; font-variant-numeric: tabular-nums; transform: translateX(8px); }
 .hour-mark.is-now { color: var(--yellow); }
 .program-guide-track { position: relative; height: 208px; margin-top: 9px; }
 .guide-item { position: absolute; top: 0; overflow: hidden; height: 198px; padding: 18px 14px; background: #111620; border: 1px solid var(--line); }
@@ -233,7 +235,7 @@ html[data-channel="metv"] .screen:-webkit-full-screen .channel-bug { width: clam
 .guide-item strong { display: block; overflow: hidden; font-size: .92rem; line-height: 1.28; text-overflow: ellipsis; }
 .guide-item.is-clipped-start { border-left-style: dashed; }
 .guide-item.is-clipped-end { border-right-style: dashed; }
-.guide-now-line { position: absolute; z-index: 4; top: 0; bottom: 5px; width: 2px; background: #fff; box-shadow: 0 0 7px rgba(255,255,255,.42); pointer-events: none; }
+.guide-now-line { position: absolute; z-index: 4; top: 34px; bottom: 5px; width: 2px; background: #fff; box-shadow: 0 0 7px rgba(255,255,255,.42); pointer-events: none; }
 .guide-now-line::before { content: ""; position: absolute; left: -4px; top: 0; border: 5px solid transparent; border-top-color: #fff; }
 .guide-empty { min-height: 150px; display: grid; place-items: center; border: 1px solid var(--line); color: var(--muted); background: #0d1119; }
 

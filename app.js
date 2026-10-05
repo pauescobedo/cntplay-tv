@@ -562,6 +562,8 @@ function renderProgramGuide(state) {
   const hourFragment = document.createDocumentFragment();
   const secondsUntilClockHour = (3600 - (guideWindowStart % 3600)) % 3600;
   const clockHourOffset = (secondsUntilClockHour / 3600) * hourWidth;
+  const secondsUntilQuarter = (900 - (guideWindowStart % 900)) % 900;
+  const quarterOffset = (secondsUntilQuarter / 3600) * hourWidth;
   timeline.style.width = `${timelineWidth}px`;
   timeline.style.setProperty("--hour-width", `${hourWidth}px`);
   timeline.style.setProperty("--clock-hour-offset", `${clockHourOffset}px`);
@@ -607,6 +609,14 @@ function renderProgramGuide(state) {
       fragment.append(row);
   });
   scale.replaceChildren(hourFragment);
+  const quarterWidth = hourWidth * .25;
+  const labelLeft = 5;
+  const labelRight = 11 + currentMark.offsetWidth;
+  const crossedDivision = quarterOffset < labelLeft ? quarterOffset + quarterWidth : quarterOffset;
+  const divisionCrossesStartTime = crossedDivision >= labelLeft && crossedDivision <= labelRight;
+  scale.classList.toggle("has-crossed-start-division", divisionCrossesStartTime);
+  if (divisionCrossesStartTime) scale.style.setProperty("--crossed-division-offset", `${crossedDivision}px`);
+  else scale.style.removeProperty("--crossed-division-offset");
   track.replaceChildren(fragment);
   requestAnimationFrame(() => {
     guideFollowScrollLeft = guideScrollTarget(nowLineLeft, viewport);
