@@ -12,7 +12,7 @@ window.CHANNEL_SCHEDULES = window.CHANNEL_SCHEDULES || {};
     ["music-somethings-got-a-hold-on-me", "music-waka-waka", "music-the-boys-are-back-in-town"],
     ["music-you-belong-with-me", "music-devuelveme-a-mi-chica", "music-dont-stop-believin"],
     ["music-havana", "music-manchild", "music-the-boys-are-back-in-town"]
-  ].map((items) => ({ type: "group", title: "Contenido Musical de Three of a Kind", items }));
+  ].map((items) => ({ type: "group", title: "Música de Three of a Kind", items }));
   const summers = [1, 2, 3, 4].map((number) => `special-summer-sound-${number}`);
   const sequence = [];
   // Dos vueltas completas y explícitas: nunca se vuelve al 1 sin haber

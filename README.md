@@ -1,42 +1,56 @@
 # CNT Live
 
-Web estática multicanal lista para GitHub Pages. CNT, Weazel, CCC (Conglomerated Comedy Channel), MeTV, The Canyon Channel y Emotion funcionan como canales lineales continuos.
+CNT Live reúne los canales de CNT Play en una experiencia de televisión lineal. Al entrar puedes ver qué se está emitiendo, consultar qué viene a continuación y recorrer la programación de las próximas horas.
 
-CNT emite una mezcla variable de bloques de *Three of a Kind*, *Caos en Strawberry*, *Paranormal*, las películas de Fort Brimstone, *Amatista 2* y *Summer Sound 4*. La mezcla cambia en cada vuelta, mantiene el orden cronológico, evita juntar dos grupos de la misma serie y sitúa las dos películas de Fort Brimstone antes de *Caos en Strawberry* 1x10–1x12.
+Las emisiones avanzan en directo: si accedes a un programa que ya ha empezado, te incorporarás al punto de la emisión correspondiente a ese momento.
 
-Cada vídeo conserva diez segundos adicionales antes de pasar al siguiente. Las parrillas incluyen pausas publicitarias con tráileres; cuando no hay una pieza disponible, aparece la pantalla «Volvemos en» con su contador. Emotion permanece identificado como canal en pruebas.
+## Canales
 
-Antes de habilitar cada vídeo, la web muestra una preparación de 2,5 segundos. El primer acceso utiliza «Ver emisión» y los cambios posteriores «Seguir con la emisión». Pulsar el logotipo superior reinicia únicamente el reproductor del canal actual.
+### CNT
 
-## Publicar en GitHub Pages
+El canal generalista de la plataforma. Su programación combina series, cine, especiales y música. Entre sus contenidos se encuentran *Three of a Kind*, *Caos en Strawberry*, *Paranormal | Volumen 1*, las películas de Fort Brimstone, *Amatista 2* y *Summer Sound 4*.
 
-1. Sube **el contenido completo de esta carpeta** a la raíz de la rama publicada. No subas únicamente algunos archivos ni la carpeta exterior del ZIP.
-2. Conserva exactamente las carpetas `assets/`, `data/` y `data/schedules/`.
-3. Conserva `CNAME`, que declara el dominio `tv.cntplay.es` para la publicación desde una rama. Un error «Site not found · 404» requiere revisar también el despliegue y la configuración de Pages.
-4. En el repositorio, abre **Settings → Pages**.
-5. En **Build and deployment**, elige **Deploy from a branch**, selecciona la rama y la carpeta raíz (`/`).
-6. Comprueba que **Custom domain** siga configurado como `tv.cntplay.es`.
+### Weazel
 
-Para publicar el ZIP entregado no necesitas instalar ni compilar nada. Usa el `index.html` de `outputs/cnt-play-directo/` (incluido en el ZIP), no el HTML fuente de la raíz del proyecto.
+El segundo canal generalista de CNT Play y el hogar principal de *Three of a Kind*. Emite las dos temporadas de la serie en orden, con pausas de continuidad entre los distintos bloques.
 
-El ZIP ya está preparado para publicar. En la versión publicada, la programación de CNT está integrada en `index.html` para evitar depender de una petición separada a `cnt.js`, que falla en el Chrome donde se reprodujo el problema. Su única fuente editable sigue siendo `data/schedules/cnt.js`.
+### CCC
 
-Si modificas los archivos fuente del proyecto, ejecuta `node work/package-site.cjs` para regenerar `outputs/cnt-play-directo/` antes de publicar. No edites a mano la copia integrada en el HTML. El generador conserva los logos existentes en el paquete. No se necesita Node para visitar la web ni para subir el ZIP ya generado.
+**Conglomerated Comedy Channel** es el canal dedicado a la comedia y el entretenimiento. Su programación incluye *Mis Amigos*, *Paranormal | Prólogo*, *Caos en Strawberry* y *Paranormal | Volumen 1*.
 
-## Cambiar el proveedor de vídeo
+### MeTV
 
-La primera prueba usa el reproductor incrustado de Google Drive. En `app.js`, la constante `VIDEO_PROVIDER` puede cambiarse de `drive` a `html5`; después hay que añadir las URL públicas de cada vídeo en `html5Sources`, usando el ID de Drive como clave. El reproductor HTML5 oculta los controles y permite una sincronización más precisa.
+**Music Entertainment TV** es el canal musical de la plataforma. Emite las cuatro ediciones de *Summer Sound* junto a bloques de *Música de Three of a Kind*, formados por diferentes actuaciones y piezas musicales.
 
-Los archivos de Drive deben tener acceso de lectura para cualquier persona con el enlace.
+### The Canyon Channel
 
-## Sustituir logotipos
+El canal de cine de CNT Play. Su catálogo incluye la saga *La Tumba del Faraón*, las películas de *Amatista* y *Fort Brimstone*, además de títulos como *Póker de Ases*, *El Hotel* y *Problemas en Casa*.
 
-Los PNG de cada canal están en `assets/`. Se pueden reemplazar conservando exactamente estos nombres: `cnt-logo.png`, `weazel-logo.png`, `comedy-tv-logo.png`, `metv-logo.png`, `canyon-logo.png` y `emotion-logo.png`.
+### Emotion
 
-## Editar contenidos y parrillas
+Canal experimental actualmente en pruebas. Su emisión ofrece un bucle de tráileres, avances y piezas musicales mientras se prepara su programación definitiva.
 
-- `data/catalog.js` contiene la base común de episodios y películas: título, duración en segundos, enlace de Drive y clasificación por edad.
-- `data/schedules/` contiene un archivo de parrilla independiente para cada canal. La parrilla de CNT es `cnt.js`, siguiendo el mismo sistema de nombres que los demás canales.
+## Cómo ver CNT Live
 
-La clasificación puede ser `null`, `"TP"`, `"7"`, `"12"`, `"16"` o `"18"`. Cuando vale `null`, no aparece ningún distintivo en el reproductor.
-Las edades se escriben en el objeto `ratings`, situado al principio de `data/catalog.js`, usando el identificador del contenido.
+1. Elige un canal en la barra superior.
+2. Espera a que termine la breve preparación de la emisión.
+3. Pulsa **Ver emisión**.
+4. Consulta el programa actual, el siguiente contenido y la parrilla situada debajo del reproductor.
+
+La parrilla se puede desplazar horizontalmente para consultar las próximas 24 horas. La línea blanca indica el punto exacto por el que avanza la emisión.
+
+CNT Live puede instalarse como aplicación en dispositivos compatibles desde las opciones del navegador.
+
+## Si la emisión no carga
+
+- Abre **¿Problemas para cargar la emisión?** dentro del reproductor.
+- Prueba a iniciar sesión en Google mediante el icono de usuario de la barra superior.
+- Cierra la ventana de inicio de sesión, vuelve a CNT Live y pulsa **Recargar reproductor**.
+- También puedes reiniciar el reproductor pulsando el logotipo del canal situado en la parte superior.
+- Comprueba que tu navegador no esté bloqueando el contenido o las ventanas necesarias para iniciar sesión.
+
+El reproductor ofrece mejores resultados en ordenadores que en dispositivos móviles. Si el problema continúa, prueba con un navegador actualizado o abre CNT Live en un ordenador.
+
+## Canales de CNT Play
+
+CNT · Weazel · Conglomerated Comedy Channel · Music Entertainment TV · The Canyon Channel · Emotion
