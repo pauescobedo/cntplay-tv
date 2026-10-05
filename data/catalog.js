@@ -114,7 +114,7 @@
   addSpecial("special-summer-sound-1", "Summer Sound 1", "25:08", "1u7E0A9WyU6BANmtHIzP9BzdYD64Xdfsx");
   addSpecial("special-summer-sound-2", "Summer Sound 2", "22:43", "1OAQfj1AhcgVE7Wc6E2f3rgv7WZ425qV5");
   addSpecial("special-summer-sound-3", "Summer Sound 3", "38:28", "1Xig8MU8-2OQT0v35E-xsNIt2MAX_RLzQ");
-  addSpecial("special-summer-sound-4", "Summer Sound 4", "1:34:25", "1CARFuyomJDTmbdpbPDCWYBggvPbQWj05");
+  addSpecial("special-summer-sound-4", "Summer Sound 4", "1:34:24", "1CARFuyomJDTmbdpbPDCWYBggvPbQWj05");
   addSpecial("special-nuestro-primer-ano", "Nuestro Primer Año", "28:46", "1GDKIVi35bkTt51fGQy0JXo14mb_GjBd9");
 
   // Avances autorizados para rellenar pausas (no aparecen como programas en la guía).
