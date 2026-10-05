@@ -762,7 +762,6 @@ function setActiveChannel(id, updateHash = true) {
   $("coming-up").classList.remove("is-visible");
   $("screen").classList.remove("coming-up-visible");
   $("coming-up").setAttribute("aria-hidden", "true");
-  $("footer-channel").textContent = channel.legalName;
   $("guide-empty").textContent = "Las emisiones empezarán próximamente.";
   document.querySelectorAll(".channel-tab").forEach((tab) => {
     const selected = tab.dataset.channel === activeChannel;

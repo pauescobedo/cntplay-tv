@@ -216,7 +216,7 @@ html[data-channel="metv"] .screen:-webkit-full-screen .channel-bug { width: clam
 
 footer { display: grid; grid-template-columns: 1fr auto; gap: 18px 28px; padding: 22px 0 34px; border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
 footer > span:first-child { font-weight: 800; letter-spacing: .08em; }
-footer small { grid-column: 1 / -1; padding-top: 15px; color: #747d8b; font-size: .68rem; line-height: 1.6; }
+.footer-channels { max-width: 720px; color: #747d8b; font-size: .8rem; line-height: 1.6; text-align: right; }
 noscript { display: block; padding: 18px; text-align: center; background: #5b1717; }
 .boot-error { min-height: 100vh; display: grid; place-content: center; gap: 1rem; padding: 2rem; text-align: center; background: #080b12; color: #fff; }
 .boot-error h1, .boot-error p { margin: 0; }
