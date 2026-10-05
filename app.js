@@ -30,6 +30,8 @@ let loadedKey = "";
 let awaitingDriveClick = false;
 let guideKey = "";
 let guideWindowStart = 0;
+let guideInitialScrollLeft = 0;
+let guideScrollbarDrag;
 let controlsTimer;
 let activeChannel = "cnt";
 let suppressChannelBug = false;
@@ -40,6 +42,38 @@ let videoHelpTimer;
 let videoHelpReady = false;
 let tuneGateEndsAt = performance.now() + 2500;
 const logoVersion = Date.now();
+
+function updateGuideReturnVisibility() {
+  const viewport = $("program-guide-scroll");
+  const button = $("guide-return-button");
+  if (!viewport || !button) return;
+  const visible = !viewport.hidden && Math.abs(viewport.scrollLeft - guideInitialScrollLeft) >= 10;
+  document.querySelector(".guide-scroll-shell")?.classList.toggle("is-away", visible);
+  button.classList.toggle("is-visible", visible);
+  button.setAttribute("aria-hidden", String(!visible));
+  button.tabIndex = visible ? 0 : -1;
+  const scrollbar = $("guide-scrollbar");
+  const thumb = $("guide-scrollbar-thumb");
+  if (!scrollbar || !thumb) return;
+  const maximum = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+  const trackWidth = scrollbar.clientWidth;
+  const thumbWidth = Math.max(38, Math.min(trackWidth, trackWidth * viewport.clientWidth / Math.max(viewport.scrollWidth, 1)));
+  const thumbTravel = Math.max(0, trackWidth - thumbWidth);
+  const thumbLeft = maximum ? (viewport.scrollLeft / maximum) * thumbTravel : 0;
+  thumb.style.width = `${thumbWidth}px`;
+  thumb.style.transform = `translateX(${thumbLeft}px)`;
+}
+
+function moveGuideScrollbar(event) {
+  if (!guideScrollbarDrag || event.pointerId !== guideScrollbarDrag.pointerId) return;
+  const scrollbar = $("guide-scrollbar");
+  const thumb = $("guide-scrollbar-thumb");
+  const viewport = $("program-guide-scroll");
+  const rect = scrollbar.getBoundingClientRect();
+  const available = Math.max(1, rect.width - thumb.offsetWidth);
+  const position = Math.max(0, Math.min(available, event.clientX - rect.left - guideScrollbarDrag.offset));
+  viewport.scrollLeft = (position / available) * Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+}
 
 function updateVideoHelpVisibility() {
   const link = $("video-help-link");
@@ -530,7 +564,9 @@ function renderProgramGuide(state) {
     const edgeMargin = Math.min(48, viewport.clientWidth * .1);
     const lineFitsComfortably = nowLineLeft <= viewport.clientWidth - edgeMargin;
     const initialScroll = lineFitsComfortably ? 0 : Math.max(0, nowLineLeft - edgeMargin);
-    viewport.scrollTo({ left: initialScroll, behavior: "smooth" });
+    guideInitialScrollLeft = initialScroll;
+    viewport.scrollTo({ left: initialScroll, behavior: "auto" });
+    updateGuideReturnVisibility();
   });
 }
 
@@ -776,6 +812,8 @@ function setActiveChannel(id, updateHash = true) {
     $("time-row").hidden = false;
     document.querySelector(".next-card").hidden = false;
     $("program-guide-scroll").hidden = false;
+    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away");
+    $("guide-return-button").classList.remove("is-visible");
     $("guide-empty").hidden = true;
     loadedKey = "";
     guideKey = "";
@@ -799,6 +837,9 @@ function setActiveChannel(id, updateHash = true) {
     $("time-row").hidden = true;
     document.querySelector(".next-card").hidden = true;
     $("program-guide-scroll").hidden = true;
+    document.querySelector(".guide-scroll-shell")?.classList.remove("is-away");
+    $("guide-return-button").classList.remove("is-visible");
+    updateGuideReturnVisibility();
     $("guide-empty").hidden = false;
     if (SCHEDULES[activeChannel]?.mode !== "upcoming") {
       // La ausencia de datos es un error de carga, no un canal sin estrenar.
@@ -845,6 +886,28 @@ $("video-help-close").addEventListener("click", () => {
   updateVideoHelpVisibility();
 });
 $("video-help-reload").addEventListener("click", reloadCurrentPlayer);
+$("program-guide-scroll").addEventListener("scroll", updateGuideReturnVisibility, { passive: true });
+$("guide-return-button").addEventListener("click", () => {
+  $("program-guide-scroll").scrollTo({ left: guideInitialScrollLeft, behavior: "smooth" });
+});
+$("guide-scrollbar").addEventListener("pointerdown", (event) => {
+  const thumb = $("guide-scrollbar-thumb");
+  const thumbRect = thumb.getBoundingClientRect();
+  const clickedThumb = event.target === thumb;
+  guideScrollbarDrag = {
+    pointerId: event.pointerId,
+    offset: clickedThumb ? event.clientX - thumbRect.left : thumbRect.width / 2
+  };
+  $("guide-scrollbar").setPointerCapture(event.pointerId);
+  moveGuideScrollbar(event);
+});
+$("guide-scrollbar").addEventListener("pointermove", moveGuideScrollbar);
+$("guide-scrollbar").addEventListener("pointerup", (event) => {
+  if (guideScrollbarDrag?.pointerId !== event.pointerId) return;
+  guideScrollbarDrag = undefined;
+  $("guide-scrollbar").releasePointerCapture(event.pointerId);
+});
+$("guide-scrollbar").addEventListener("pointercancel", () => { guideScrollbarDrag = undefined; });
 window.addEventListener("hashchange", () => {
   setActiveChannel(location.hash.slice(1), false);
 });

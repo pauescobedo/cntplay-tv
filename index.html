@@ -7,15 +7,15 @@
     <meta name="theme-color" content="#080b12" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="CNT Live" />
-    <link rel="manifest" href="manifest.webmanifest?v=20261005-89" />
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261005-89" />
-    <meta name="cnt-build" content="20261005-89" />
+    <link rel="manifest" href="manifest.webmanifest?v=20261005-98" />
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261005-98" />
+    <meta name="cnt-build" content="20261005-98" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>CNT</title>
-    <link rel="icon" href="assets/favicon.svg?v=20261005-89" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css?v=20261005-89" />
+    <link rel="icon" href="assets/favicon.svg?v=20261005-98" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css?v=20261005-98" />
     <script>
       document.documentElement.classList.add("app-booting");
       const currentBuild = document.querySelector('meta[name="cnt-build"]').content;
@@ -37,7 +37,7 @@
         if (source) window.CNT_LOAD_ERRORS.push(source);
         else if (event.message) window.CNT_LOAD_ERRORS.push(event.message);
       }, true);
-      if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=20261005-89", { updateViaCache: "none" }).catch(() => {});
+      if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=20261005-98", { updateViaCache: "none" }).catch(() => {});
       window.addEventListener("load", () => setTimeout(() => {
         if (window.CNT_APP_READY) {
           sessionStorage.removeItem("cnt-recovery-attempted");
@@ -147,12 +147,18 @@
           <div class="guide-heading">
             <span class="eyebrow">PROGRAMACIÓN DE HOY</span>
           </div>
-          <div id="program-guide-scroll" class="program-guide-scroll">
-            <div id="guide-timeline" class="guide-timeline">
-              <div id="hour-scale" class="hour-scale" aria-hidden="true"></div>
-              <div id="program-guide-track" class="program-guide-track" role="list"></div>
-              <div id="guide-now-line" class="guide-now-line" aria-hidden="true"></div>
+          <div class="guide-scroll-shell">
+            <div id="program-guide-scroll" class="program-guide-scroll" tabindex="0" aria-label="Programación desplazable">
+              <div id="guide-timeline" class="guide-timeline">
+                <div id="hour-scale" class="hour-scale" aria-hidden="true"></div>
+                <div id="program-guide-track" class="program-guide-track" role="list"></div>
+                <div id="guide-now-line" class="guide-now-line" aria-hidden="true"></div>
+              </div>
             </div>
+            <button id="guide-return-button" class="guide-return-button" type="button" tabindex="-1" aria-hidden="true" aria-label="Volver a la emisión actual" title="Volver a la emisión actual">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 4 12l7 7M5 12h15"/></svg>
+            </button>
+            <div id="guide-scrollbar" class="guide-scrollbar" aria-hidden="true"><i id="guide-scrollbar-thumb"></i></div>
           </div>
           <div id="guide-empty" class="guide-empty" hidden>Las emisiones empezarán próximamente.</div>
         </section>
@@ -166,7 +172,7 @@
     </footer>
 
     <noscript>Esta emisión necesita JavaScript para sincronizarse con la hora actual.</noscript>
-    <script src="data/catalog.js?v=20261005-89"></script>
+    <script src="data/catalog.js?v=20261005-98"></script>
     <script data-source="data/schedules/cnt.js">
 // Parrilla lineal de CNT.
 window.CHANNEL_SCHEDULES = window.CHANNEL_SCHEDULES || {};
@@ -248,11 +254,11 @@ window.CHANNEL_SCHEDULES = window.CHANNEL_SCHEDULES || {};
 })();
 
     </script>
-    <script src="data/schedules/weazel.js?v=20261005-89"></script>
-    <script src="data/schedules/comedy-tv.js?v=20261005-89"></script>
-    <script src="data/schedules/metv.js?v=20261005-89"></script>
-    <script src="data/schedules/the-canyon-channel.js?v=20261005-89"></script>
-    <script src="data/schedules/emotion.js?v=20261005-89"></script>
-    <script src="app.js?v=20261005-89"></script>
+    <script src="data/schedules/weazel.js?v=20261005-98"></script>
+    <script src="data/schedules/comedy-tv.js?v=20261005-98"></script>
+    <script src="data/schedules/metv.js?v=20261005-98"></script>
+    <script src="data/schedules/the-canyon-channel.js?v=20261005-98"></script>
+    <script src="data/schedules/emotion.js?v=20261005-98"></script>
+    <script src="app.js?v=20261005-98"></script>
   </body>
 </html>
