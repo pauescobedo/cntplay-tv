@@ -34,6 +34,8 @@ let guideNowLineLeft = 0;
 let guideFollowScrollLeft = 0;
 let guideReturnScrollLeft = 0;
 let guideScrollbarDrag;
+let guideReturnInProgress = false;
+let guideReturnTimer;
 let controlsTimer;
 let activeChannel = "cnt";
 let suppressChannelBug = false;
@@ -52,10 +54,11 @@ function updateGuideReturnVisibility() {
   const edgeMargin = Math.min(36, viewport.clientWidth * .075);
   const linePosition = guideNowLineLeft - viewport.scrollLeft;
   const maximum = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+  const followsEmission = Math.abs(viewport.scrollLeft - guideFollowScrollLeft) < 2;
   // No se pide un margen imposible en los extremos reales de la parrilla.
-  const lineIsLeft = linePosition < edgeMargin && viewport.scrollLeft > .5;
-  const lineIsRight = linePosition > viewport.clientWidth - edgeMargin && viewport.scrollLeft < maximum - .5;
-  const visible = !viewport.hidden && (lineIsLeft || lineIsRight);
+  const lineIsLeft = !followsEmission && linePosition < edgeMargin - 2 && viewport.scrollLeft > .5;
+  const lineIsRight = !followsEmission && linePosition > viewport.clientWidth - edgeMargin + 2 && viewport.scrollLeft < maximum - .5;
+  const visible = !guideReturnInProgress && !viewport.hidden && (lineIsLeft || lineIsRight);
   const startViewShowsNow = guideNowLineLeft <= viewport.clientWidth - edgeMargin;
   if (lineIsLeft) {
     guideReturnScrollLeft = startViewShowsNow
@@ -508,7 +511,7 @@ function renderProgramGuide(state) {
     const edgeMargin = Math.min(36, viewport.clientWidth * .075);
     const rightLimit = viewport.clientWidth - edgeMargin;
     const previousLinePosition = guideNowLineLeft - viewport.scrollLeft;
-    const wasFollowingEmission = Math.abs(viewport.scrollLeft - guideFollowScrollLeft) < 1;
+    const wasFollowingEmission = Math.abs(viewport.scrollLeft - guideFollowScrollLeft) < 2;
     const reachesRightMargin = !wasFollowingEmission
       && previousLinePosition >= rightLimit - 1
       && previousLinePosition <= rightLimit + 1;
@@ -931,7 +934,15 @@ $("video-help-close").addEventListener("click", () => {
 $("video-help-reload").addEventListener("click", reloadCurrentPlayer);
 $("program-guide-scroll").addEventListener("scroll", updateGuideReturnVisibility, { passive: true });
 $("guide-return-button").addEventListener("click", () => {
-  $("program-guide-scroll").scrollTo({ left: guideReturnScrollLeft, behavior: "smooth" });
+  const viewport = $("program-guide-scroll");
+  guideReturnInProgress = true;
+  clearTimeout(guideReturnTimer);
+  updateGuideReturnVisibility();
+  viewport.scrollTo({ left: guideReturnScrollLeft, behavior: "smooth" });
+  guideReturnTimer = setTimeout(() => {
+    guideReturnInProgress = false;
+    updateGuideReturnVisibility();
+  }, 700);
 });
 $("guide-scrollbar").addEventListener("pointerdown", (event) => {
   const thumb = $("guide-scrollbar-thumb");
